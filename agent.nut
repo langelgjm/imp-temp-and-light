@@ -16,6 +16,7 @@ function format_datetime(datetime) {
 device.on("new_reading" function(sensor_data) {
     
     // Convert from UNIX time to human and plotly readable format
+    local unixtime = sensor_data.timestamp
     sensor_data.timestamp = format_datetime(sensor_data.timestamp)
     // Convert from Celsius to Fahrenheit
     sensor_data.temp = sensor_data.temp * 1.8 + 32.0
@@ -41,6 +42,14 @@ device.on("new_reading" function(sensor_data) {
     data.extend(data2)
     //data.extend(data2)
 
+    // make Plotly's x_range the last two days (48 hours); Plotly needs milliseconds
+    server.log(unixtime)
+    local x_range = array(2)
+    x_range[0] = (unixtime-(48*3600)).tostring()+"000"
+    x_range[1] = unixtime.tostring()+"000"
+    server.log(x_range[0])
+    server.log(x_range[1])
+
     // Plotly Layout Object
     local layout = {
         fileopt = "extend",
@@ -48,7 +57,7 @@ device.on("new_reading" function(sensor_data) {
         //traces = [0, 1],
         //{"title": "my plot title", "xaxis": {"name": "Time (ms)"}, "yaxis": {"name": "Voltage (mV)"}}
         layout = {
-            "xaxis": {"title": "Date and Time"},
+            "xaxis": {"title": "Date and Time", "range": x_range},
             "yaxis": {"title": "Temperature (F)", "range": [-25, 125]} ,
             "yaxis2": {"title": "Light", "range": [-1, 5], "side": "right", "overlaying": "y"},
             "title": "Temperature and Light"
